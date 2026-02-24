@@ -152,6 +152,7 @@ systemctl --user restart speech-dispatcher
 ## ブラウザについて
 現状、**見出しスキップなどの構造ナビゲーションは Firefox でのみ動作確認**できています。
 Chrome / Chromium では同等の操作ができない場合があるため、Firefox の利用を推奨します。
+Orca 起動直後は Firefox がすぐに読み上げないことがあります。その場合は Firefox の再起動を試してください。
 
 ## トラブルシュート
 

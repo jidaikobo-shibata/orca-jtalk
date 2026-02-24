@@ -76,3 +76,4 @@ link it in `~/.config/speech-dispatcher/modules/`.
 ## Browser note
 At the moment, **structural navigation such as heading skip is confirmed only in Firefox**.
 Chrome / Chromium may not support the same navigation, so Firefox is recommended.
+Right after Orca starts, Firefox may sometimes not read immediately. If that happens, try restarting Firefox.
