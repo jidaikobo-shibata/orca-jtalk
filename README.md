@@ -8,38 +8,34 @@ See `README_JA.md`.
 
 ## Layout
 - conf/: Speech Dispatcher module configuration
-- docs/: notes and setup steps
 - scripts/: wrapper scripts
-- tests/: test helpers
-- logs/: logs (if used)
 
-## Quick start (confirmed)
+## Quick start (Ubuntu)
 This environment uses `sd_generic` to call Open JTalk.
 
-1. Create `~/.config/speech-dispatcher/modules/openjtalk-generic.conf`:
+1. Clone:
 ```
-cp /home/shibata/Internal/dev/orca-jtalk/conf/openjtalk-generic.conf ~/.config/speech-dispatcher/modules/
+git clone https://github.com/jidaikobo-shibata/orca-jtalk <install-path>
+cd <install-path>
 ```
 
-2. Copy espeak-ng module config (for English switching):
+2. Link the module config (recommended):
 ```
-cp /etc/speech-dispatcher/modules/espeak-ng.conf ~/.config/speech-dispatcher/modules/
+mkdir -p ~/.config/speech-dispatcher/modules
+ln -s <install-path>/conf/openjtalk-generic.conf ~/.config/speech-dispatcher/modules/openjtalk-generic.conf
 ```
 
 3. Add to `~/.config/speech-dispatcher/speechd.conf`:
 ```
 AddModule "openjtalk" "sd_generic" "openjtalk-generic.conf"
-AddModule "espeak-ng" "sd_espeak-ng" "espeak-ng.conf"
 LanguageDefaultModule "ja" "openjtalk"
-LanguageDefaultModule "en" "espeak-ng"
-DefaultModule espeak-ng
+DefaultModule openjtalk
 ```
 
 4. Restart and test:
 ```
 systemctl --user restart speech-dispatcher
 spd-say -l ja "これはテストです。"
-spd-say -l ja "link"
 ```
 
 ## Pronunciation tuning (recommended)
@@ -48,8 +44,7 @@ Use `conf/word_replacements.dist.tsv` for default replacements and
 applies both automatically for Orca and spd-say, and `local` can override `dist`.
 
 ## Orca note
-Orca only switches language when the application exposes the `language` text attribute.
-If it doesn't, Orca won't send `SET LANGUAGE`, so auto switching won't happen.
+At the moment, automatic language switching based on context is not available.
 
 ## Wrapper script
 `scripts/openjtalk_say.sh` reads text from stdin, applies replacements,
@@ -58,4 +53,22 @@ then generates a wav file via `open_jtalk` and plays it.
 If the dictionary or voice path differs from defaults, set:
 - `OPENJTALK_DICT`
 - `OPENJTALK_VOICE`
-- `OPENJTALK_REPLACE_FILE`
+
+## Text logging (optional)
+If `OPENJTALK_LOG_TEXT=1` is enabled in `conf/openjtalk-generic.conf`,
+logs are written daily and the latest log is available at:
+```
+tail -f <install-path>/logs/openjtalk_text.log
+```
+
+## Speed tuning
+Set `OPENJTALK_SPEED` in `conf/openjtalk-generic.conf`.
+Default is `1.0`, and larger values are faster.
+After changing, restart:
+```
+systemctl --user restart speech-dispatcher
+```
+
+### Local-only speed setting
+Create `conf/openjtalk-generic.local.conf` for your own environment and
+link it in `~/.config/speech-dispatcher/modules/`.
