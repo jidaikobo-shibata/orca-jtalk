@@ -22,6 +22,7 @@ trap cleanup EXIT
 TEXT_FILE="${TMP_DIR}/input.txt"
 TEXT_NORM_FILE="${TMP_DIR}/input_norm.txt"
 WAV_FILE="${TMP_DIR}/output.wav"
+LOG_TEXT_PATH="${OPENJTALK_LOG_TEXT_PATH:-"${LOG_DIR}/openjtalk_text.log"}"
 
 cat > "${TEXT_FILE}"
 
@@ -61,6 +62,14 @@ with open(dst, "w", encoding="utf-8") as f:
 PY
 else
   cp "${TEXT_FILE}" "${TEXT_NORM_FILE}"
+fi
+
+if [[ "${OPENJTALK_LOG_TEXT:-0}" == "1" ]]; then
+  {
+    printf '[%s]\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+    cat "${TEXT_NORM_FILE}"
+    printf '\n----\n'
+  } >> "${LOG_TEXT_PATH}"
 fi
 
 # Resolve Open JTalk dictionary path
