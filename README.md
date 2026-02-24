@@ -72,3 +72,7 @@ systemctl --user restart speech-dispatcher
 ### Local-only speed setting
 Create `conf/openjtalk-generic.local.conf` for your own environment and
 link it in `~/.config/speech-dispatcher/modules/`.
+
+## Browser note
+At the moment, **structural navigation such as heading skip is confirmed only in Firefox**.
+Chrome / Chromium may not support the same navigation, so Firefox is recommended.

@@ -134,6 +134,10 @@ ln -s <インストール先>/conf/openjtalk-generic.local.conf ~/.config/speech
 systemctl --user restart speech-dispatcher
 ```
 
+## ブラウザについて
+現状、**見出しスキップなどの構造ナビゲーションは Firefox でのみ動作確認**できています。
+Chrome / Chromium では同等の操作ができない場合があるため、Firefox の利用を推奨します。
+
 ## トラブルシュート
 
 ### Open JTalk の辞書が見つからない
