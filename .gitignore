@@ -1,3 +1,6 @@
 # Codex/Serena
 .serena/
 conf/openjtalk_dictindex/
+
+# Local overrides
+conf/openjtalk-generic.local.conf
