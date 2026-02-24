@@ -37,27 +37,42 @@ fi
 
 # Apply word replacements (optional):
 # A simple tab-separated table where each entry is a direct string replacement.
-REPLACE_FILE="${OPENJTALK_REPLACE_FILE:-"${SCRIPT_DIR}/../conf/word_replacements.tsv"}"
-if [[ -f "${REPLACE_FILE}" ]]; then
-  OPENJTALK_TEXT_FILE="${TEXT_FILE}" OPENJTALK_TEXT_NORM_FILE="${TEXT_NORM_FILE}" OPENJTALK_REPLACE_FILE="${REPLACE_FILE}" python3 - <<'PY'
+# The base (dist) table is always read if present, then a local override table.
+REPLACE_DIST_FILE="${OPENJTALK_REPLACE_FILE:-"${SCRIPT_DIR}/../conf/word_replacements.dist.tsv"}"
+REPLACE_LOCAL_FILE="${OPENJTALK_REPLACE_LOCAL_FILE:-"${SCRIPT_DIR}/../conf/word_replacements.local.tsv"}"
+if [[ -f "${REPLACE_DIST_FILE}" || -f "${REPLACE_LOCAL_FILE}" ]]; then
+  OPENJTALK_TEXT_FILE="${TEXT_FILE}" \
+  OPENJTALK_TEXT_NORM_FILE="${TEXT_NORM_FILE}" \
+  OPENJTALK_REPLACE_FILE="${REPLACE_DIST_FILE}" \
+  OPENJTALK_REPLACE_LOCAL_FILE="${REPLACE_LOCAL_FILE}" \
+  python3 - <<'PY'
 import os, sys
 src = os.environ.get("OPENJTALK_TEXT_FILE")
 dst = os.environ.get("OPENJTALK_TEXT_NORM_FILE")
 rep = os.environ.get("OPENJTALK_REPLACE_FILE")
+rep_local = os.environ.get("OPENJTALK_REPLACE_LOCAL_FILE")
 
 with open(src, "r", encoding="utf-8") as f:
     text = f.read()
 
+def load_replacements(path):
+    replacements = []
+    if not path or not os.path.exists(path):
+        return replacements
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "\t" not in line:
+                continue
+            a, b = line.split("\t", 1)
+            replacements.append((a, b))
+    return replacements
+
 replacements = []
-with open(rep, "r", encoding="utf-8") as f:
-    for line in f:
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "\t" not in line:
-            continue
-        a, b = line.split("\t", 1)
-        replacements.append((a, b))
+replacements.extend(load_replacements(rep))
+replacements.extend(load_replacements(rep_local))
 
 for a, b in replacements:
     text = text.replace(a, b)
@@ -121,7 +136,8 @@ fi
 if [[ "${OPENJTALK_DEBUG:-0}" == "1" ]]; then
   echo "DEBUG: OPENJTALK_DICT=${DICT_PATH}" >&2
   echo "DEBUG: OPENJTALK_VOICE=${VOICE_PATH}" >&2
-  echo "DEBUG: OPENJTALK_REPLACE_FILE=${REPLACE_FILE}" >&2
+  echo "DEBUG: OPENJTALK_REPLACE_DIST_FILE=${REPLACE_DIST_FILE}" >&2
+  echo "DEBUG: OPENJTALK_REPLACE_LOCAL_FILE=${REPLACE_LOCAL_FILE}" >&2
   echo "DEBUG: TEXT_FILE=${TEXT_FILE}" >&2
   echo "DEBUG: TEXT_NORM_FILE=${TEXT_NORM_FILE}" >&2
 fi

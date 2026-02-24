@@ -79,7 +79,11 @@ orca --setup
 
 ## 6. 読み上げの置換（おすすめ）
 
-`conf/word_replacements.tsv` に置換ルールを書きます（タブ区切り）。
+置換ルールは `dist` と `local` に分かれています。
+`local` を作ると自分好みに辞書を追加でき、**`dist` を上書き**できます。
+
+- `conf/word_replacements.dist.tsv`
+- `conf/word_replacements.local.tsv`
 
 例:
 ```

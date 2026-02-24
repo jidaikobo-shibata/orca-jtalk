@@ -3,6 +3,9 @@
 This repository contains a user-space integration of Open JTalk with Speech Dispatcher
 so that Orca can use Japanese TTS.
 
+## 日本語ドキュメント
+See `docs/README_JA.md`.
+
 ## Layout
 - conf/: Speech Dispatcher module configuration
 - docs/: notes and setup steps
@@ -40,9 +43,9 @@ spd-say -l ja "link"
 ```
 
 ## Pronunciation tuning (recommended)
-Use `conf/word_replacements.tsv` to define replacements (e.g., LINK -> リンク).
-The wrapper script applies it automatically for both Orca and spd-say.
-See `docs/pronunciation_tuning.md`.
+Use `conf/word_replacements.dist.tsv` for default replacements and
+`conf/word_replacements.local.tsv` for your own overrides. The wrapper script
+applies both automatically for Orca and spd-say, and `local` can override `dist`.
 
 ## Orca note
 Orca only switches language when the application exposes the `language` text attribute.
