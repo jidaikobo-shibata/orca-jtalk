@@ -77,6 +77,21 @@ orca
 orca --setup
 ```
 
+## Firefox + Orca の最低限の操作
+
+以下は動作確認済みの最小セットです（環境や設定で変わる場合があります）。
+
+- `Tab` / `Shift+Tab`: リンクやフォームへ移動
+- `H` / `Shift+H`: 見出しへ移動
+- `Orcaキー(Insert)+A`: ブラウズモード / フォーカスモードの切り替え
+
+### 連続読み上げ（Say All）
+
+`orca --setup` の「キー割り当て」で  
+`Default / Speak entire document` を `Insert+Down` に割り当て、  
+`Modified` をチェックして `Apply` すると、
+`Insert+Down` で仮想カーソル位置から下を読み上げられます。
+
 ## 6. 読み上げの置換（おすすめ）
 
 置換ルールは `dist` と `local` に分かれています。
