@@ -8,3 +8,7 @@ conf/openjtalk-generic.local.conf
 # Local overrides
 conf/openjtalk-generic.local.conf
 conf/word_replacements.local.tsv
+
+# Logs
+logs/openjtalk_text.log
+logs/openjtalk_text_*.log
