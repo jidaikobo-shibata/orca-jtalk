@@ -25,7 +25,9 @@ trap cleanup EXIT
 TEXT_FILE="${TMP_DIR}/input.txt"
 TEXT_NORM_FILE="${TMP_DIR}/input_norm.txt"
 WAV_FILE="${TMP_DIR}/output.wav"
-LOG_TEXT_PATH="${OPENJTALK_LOG_TEXT_PATH:-"${LOG_DIR}/openjtalk_text.log"}"
+LOG_TEXT_DATE="$(date '+%Y%m%d')"
+LOG_TEXT_PATH_DAILY="${OPENJTALK_LOG_TEXT_PATH:-"${LOG_DIR}/openjtalk_text_${LOG_TEXT_DATE}.log"}"
+LOG_TEXT_PATH_LATEST="${LOG_DIR}/openjtalk_text.log"
 
 # Read input text from stdin as provided by Speech Dispatcher.
 cat > "${TEXT_FILE}"
@@ -86,11 +88,15 @@ fi
 
 # Optional logging of the final text that will be synthesized.
 if [[ "${OPENJTALK_LOG_TEXT:-0}" == "1" ]]; then
+  # Point a stable "latest" filename to today's log.
+  ln -sf "${LOG_TEXT_PATH_DAILY}" "${LOG_TEXT_PATH_LATEST}"
   {
     printf '[%s]\n' "$(date '+%Y-%m-%d %H:%M:%S')"
     cat "${TEXT_NORM_FILE}"
     printf '\n----\n'
-  } >> "${LOG_TEXT_PATH}"
+  } >> "${LOG_TEXT_PATH_DAILY}"
+  # Keep recent logs only (default: last 5 days).
+  find "${LOG_DIR}" -name 'openjtalk_text_*.log' -mtime +5 -delete 2>/dev/null || true
 fi
 
 # Resolve Open JTalk dictionary path.
