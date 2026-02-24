@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Open JTalk wrapper for Speech Dispatcher GenericExecuteSynth
-# Reads text from stdin, generates a wav file, and plays it.
+# Open JTalk wrapper for Speech Dispatcher GenericExecuteSynth.
+# Reads text from stdin, applies optional replacements, synthesizes a wav,
+# and plays it. Designed to be called by Speech Dispatcher with $DATA.
 
+# Resolve project-local paths and ensure a writable log directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="${LOG_DIR:-"${SCRIPT_DIR}/../logs"}"
 
 mkdir -p "${LOG_DIR}"
 
+# Use a temp working directory for intermediate files (input, normalized input, wav).
 TMP_DIR="$(mktemp -d)"
 cleanup() {
   if [[ "${OPENJTALK_DEBUG:-0}" == "1" ]]; then
@@ -24,6 +27,7 @@ TEXT_NORM_FILE="${TMP_DIR}/input_norm.txt"
 WAV_FILE="${TMP_DIR}/output.wav"
 LOG_TEXT_PATH="${OPENJTALK_LOG_TEXT_PATH:-"${LOG_DIR}/openjtalk_text.log"}"
 
+# Read input text from stdin as provided by Speech Dispatcher.
 cat > "${TEXT_FILE}"
 
 if [[ ! -s "${TEXT_FILE}" ]]; then
@@ -31,7 +35,8 @@ if [[ ! -s "${TEXT_FILE}" ]]; then
   exit 1
 fi
 
-# Apply word replacements (optional)
+# Apply word replacements (optional):
+# A simple tab-separated table where each entry is a direct string replacement.
 REPLACE_FILE="${OPENJTALK_REPLACE_FILE:-"${SCRIPT_DIR}/../conf/word_replacements.tsv"}"
 if [[ -f "${REPLACE_FILE}" ]]; then
   OPENJTALK_TEXT_FILE="${TEXT_FILE}" OPENJTALK_TEXT_NORM_FILE="${TEXT_NORM_FILE}" OPENJTALK_REPLACE_FILE="${REPLACE_FILE}" python3 - <<'PY'
@@ -64,6 +69,7 @@ else
   cp "${TEXT_FILE}" "${TEXT_NORM_FILE}"
 fi
 
+# Optional logging of the final text that will be synthesized.
 if [[ "${OPENJTALK_LOG_TEXT:-0}" == "1" ]]; then
   {
     printf '[%s]\n' "$(date '+%Y-%m-%d %H:%M:%S')"
@@ -72,7 +78,8 @@ if [[ "${OPENJTALK_LOG_TEXT:-0}" == "1" ]]; then
   } >> "${LOG_TEXT_PATH}"
 fi
 
-# Resolve Open JTalk dictionary path
+# Resolve Open JTalk dictionary path.
+# Open JTalk requires a MeCab dictionary; we point to common install locations.
 DICT_CANDIDATES=(
   "${OPENJTALK_DICT:-}"
   "/var/lib/mecab/dic/open-jtalk/naist-jdic"
@@ -91,7 +98,7 @@ if [[ -z "${DICT_PATH}" ]]; then
   exit 1
 fi
 
-# Resolve HTS voice path
+# Resolve HTS voice path (voice model).
 VOICE_CANDIDATES=(
   "${OPENJTALK_VOICE:-}"
   "/usr/share/hts-voice/nitech-jp-atr503-m001/nitech_jp_atr503_m001.htsvoice"
@@ -110,6 +117,7 @@ if [[ -z "${VOICE_PATH}" ]]; then
   exit 1
 fi
 
+# Debug output for troubleshooting paths and files.
 if [[ "${OPENJTALK_DEBUG:-0}" == "1" ]]; then
   echo "DEBUG: OPENJTALK_DICT=${DICT_PATH}" >&2
   echo "DEBUG: OPENJTALK_VOICE=${VOICE_PATH}" >&2
@@ -118,11 +126,12 @@ if [[ "${OPENJTALK_DEBUG:-0}" == "1" ]]; then
   echo "DEBUG: TEXT_NORM_FILE=${TEXT_NORM_FILE}" >&2
 fi
 
-# Optional voice parameters
+# Optional synthesis parameters.
 SPEED="${OPENJTALK_SPEED:-1.0}"
 ALPHA="${OPENJTALK_ALPHA:-0.55}"
 BETA="${OPENJTALK_BETA:-0.0}"
 
+# Synthesize to wav using Open JTalk.
 open_jtalk \
   -x "${DICT_PATH}" \
   -m "${VOICE_PATH}" \
@@ -137,11 +146,13 @@ if [[ ! -s "${WAV_FILE}" ]]; then
   exit 1
 fi
 
+# Optionally skip playback and only output the wav path.
 if [[ "${OPENJTALK_NO_PLAY:-0}" == "1" ]]; then
   echo "WAV: ${WAV_FILE}"
   exit 0
 fi
 
+# Play the generated wav using available audio tools.
 if command -v aplay >/dev/null 2>&1; then
   aplay -q "${WAV_FILE}"
 elif command -v pw-play >/dev/null 2>&1; then
