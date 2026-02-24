@@ -4,7 +4,7 @@ This repository contains a user-space integration of Open JTalk with Speech Disp
 so that Orca can use Japanese TTS.
 
 ## 日本語ドキュメント
-See `docs/README_JA.md`.
+See `README_JA.md`.
 
 ## Layout
 - conf/: Speech Dispatcher module configuration
